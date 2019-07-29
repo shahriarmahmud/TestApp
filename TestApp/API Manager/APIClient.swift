@@ -23,10 +23,9 @@ typealias SocialCompletion = (HTTPURLResponse) -> ()
 
 class APIClient {
     
-    //static let shared = APIClient()
     private static var privateShared : APIClient?
     
-    class var shared: APIClient { // change class to final to prevent override
+    class var shared: APIClient {
         guard let uwShared = privateShared else {
             privateShared = APIClient()
             return privateShared!
@@ -60,28 +59,6 @@ class APIClient {
     private var saHeaders: [String:String]? {
         return ["token" :  "token"].merging(preLogHeaders) {$1}
     }
-    
-    func objectAPICall<T: Mappable>(apiEndPoint: Endpoint, modelType: T.Type, completion: @escaping CompletionHandler<T>) {
-        
-        sessionManager.request(apiEndPoint.path, method: apiEndPoint.method, parameters: apiEndPoint.query, encoding: apiEndPoint.encoding, headers: saHeaders).validate(statusCode: 200..<300).responseObject { (response: DataResponse<T>) in
-            
-            switch response.result {
-            case .success(let value):
-                completion(Result.success(value))
-            case .failure(let error):
-                print(error.localizedDescription)
-                guard let statusCode = response.response?.statusCode else {
-                    let unKnownError = ErrorResponse(-999, response.data, error)
-                    completion(Result.failure(unKnownError))
-                    return
-                }
-                let mError = ErrorResponse(statusCode, response.data, error)
-                completion(Result.failure(mError))
-            }
-        }
-    }
-    
-
     
     func makeAPICall(apiEndPoint: Endpoint, completion: @escaping CompletionHandler<Any>) {
         Alamofire.request(apiEndPoint.path, method: apiEndPoint.method, parameters: apiEndPoint.query, encoding: apiEndPoint.encoding, headers: saHeaders)
