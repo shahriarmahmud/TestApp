@@ -7,12 +7,16 @@
 //
 
 import UIKit
+import RxSwift
 
 class DashboardVC: UIViewController {
     
     @IBOutlet weak private var tableView: UITableView!
     private var viewModel = DashboardVM()
     private var apiCallDone = false
+    
+    let disposeBag = DisposeBag()
+
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -33,6 +37,7 @@ class DashboardVC: UIViewController {
     }
     
     private func getData(){
+
         viewModel.fetchAllEmployees { (success) in
             if !success {
                 self.viewModel.getEmployeeList { [weak self] (success) in
@@ -71,6 +76,7 @@ extension DashboardVC: UITableViewDelegate,UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: DashboardCell.identifire, for: indexPath) as! DashboardCell
         cell.setup(with: viewModel, searchemployeeListData: viewModel.employeeListData, index: indexPath.section, isSearch: false)
+
         return cell
     }
     

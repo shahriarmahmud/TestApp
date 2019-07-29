@@ -9,6 +9,7 @@
 import UIKit
 import SDWebImage
 import CoreData
+import RxSwift
 
 class DashboardCell: UITableViewCell {
     

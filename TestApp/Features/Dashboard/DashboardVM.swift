@@ -11,38 +11,34 @@ import SVProgressHUD
 import SwiftyJSON
 import ObjectMapper
 import CoreData
+import RxSwift
+import RxCocoa
 
 class DashboardVM{
     
     var dataCount = 0
     var employeeListData: [NSManagedObject] = []
-    
-    
+    let disposeBag = DisposeBag()
+
     func getEmployeeList (completion: @escaping (_ success: Bool) -> Void) {
         SVProgressHUD.show()
-        APIClient.shared.makeAPICall(apiEndPoint: EmployeeDataEndPoint.GetEmployeeData) { (result) in
-            switch result {
-            case .success(let data ):
-                guard let apiResponse = Mapper<EmployeeList>().mapArray(JSONObject: data) else {return}
-                self.saveInDB(apiResponse)
-                self.fetchAllEmployees { (success) in
+        URLRequest.load(resource: EmployeeResponse.all)
+            .subscribe(onNext: { [weak self] result in
+
+                guard let apiResponse = result?.employeeList else {return}
+                self?.saveInDB(apiResponse)
+                self?.fetchAllEmployees { (success) in
                     if success {
-                        self.dataCount = self.employeeListData.count
+                        self?.dataCount = self?.employeeListData.count ?? 0
                     }else{
-                        self.dataCount = 0
+                        self?.dataCount = 0
                     }
                 }
                 completion(true)
                 SVProgressHUD.dismiss()
-                
-            case .failure(_,_,let error):
-                print(error.localizedDescription)
-                SVProgressHUD.dismiss()
-                SVProgressHUD.showError(withStatus: error.localizedDescription)
-                completion(false)
-            }
-        }
+            }).disposed(by: disposeBag)
     }
+    
     
     // MARK:- Values to display in our table view controller
     var isEmptyTable: Bool {

@@ -7,37 +7,27 @@
 //
 
 import Foundation
-import ObjectMapper
 
-struct EmployeeResponse: Mappable {
+struct EmployeeResponse: Decodable {
     
     var employeeList: [EmployeeList]?
-    
-    init?(map: Map) {
-        
-    }
-    
-    mutating func mapping(map: Map) {
-        employeeList <- map[""]
-    }
 }
 
-struct EmployeeList: Mappable{
+struct EmployeeList: Decodable{
     var id:String?
     var employeeName:String?
     var employeeSalary:String?
     var employeeAge:String?
     var employeeImage:String?
-    
-    init?(map: Map) {
-        
-    }
-    
-    mutating func mapping(map: Map) {
-        employeeName <- map["employee_name"]
-        employeeSalary <- map["employee_salary"]
-        employeeAge <- map["employee_age"]
-        id <- map["id"]
-        employeeImage <- map["profile_image"]
-    }
+    var employeeRating:String?
 }
+
+extension EmployeeResponse {
+    
+    static var all: Resource<EmployeeResponse> = {
+        let url = URL(string: EmployeeDataEndPoint.GetEmployeeData.path)!
+        return Resource(url: url)
+    }()
+    
+}
+

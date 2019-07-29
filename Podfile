@@ -13,6 +13,8 @@ pod 'SDWebImage', '~> 4.0'
 pod 'SwiftyJSON', '~> 4.0'
 pod 'Cosmos', '~> 17.0'
 pod 'SDWebImage', '~> 4.0'
+pod 'RxSwift','~> 4.0'
+pod 'RxCocoa','~> 4.0'
 
   # Pods for TestApp
 
