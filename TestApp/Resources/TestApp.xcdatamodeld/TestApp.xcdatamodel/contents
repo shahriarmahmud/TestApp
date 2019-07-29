@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="14492.1" systemVersion="18F132" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="EmployeeData" representedClassName="EmployeeData" syncable="YES" codeGenerationType="class">
+        <attribute name="eAge" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eId" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eImage" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eName" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eRating" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="eSalary" optional="YES" attributeType="String" syncable="YES"/>
+    </entity>
+    <elements>
+        <element name="EmployeeData" positionX="-63" positionY="-18" width="128" height="135"/>
+    </elements>
+</model>
