@@ -13,31 +13,56 @@ import ObjectMapper
 import CoreData
 import RxSwift
 import RxCocoa
+import AlamofireObjectMapper
 
 class DashboardVM{
     
     var dataCount = 0
     var employeeListData: [NSManagedObject] = []
     let disposeBag = DisposeBag()
+    
+    private let employeeObservedData = PublishSubject<[NSManagedObject]>()
+    var getData: Observable<[NSManagedObject]> {
+        return employeeObservedData.asObservable()
+    }
 
+    
     func getEmployeeList (completion: @escaping (_ success: Bool) -> Void) {
         SVProgressHUD.show()
-        URLRequest.load(resource: EmployeeResponse.all)
-            .subscribe(onNext: { [weak self] result in
+        APIClient.shared.makeAPICall(apiEndPoint: EmployeeDataEndPoint.GetEmployeeData) { (result) in
+            switch result {
+            case .success(let data ):
+                guard let apiResponse = Mapper<EmployeeList>().mapArray(JSONObject: data) else {return}
 
-                guard let apiResponse = result?.employeeList else {return}
-                self?.saveInDB(apiResponse)
-                self?.fetchAllEmployees { (success) in
-                    if success {
-                        self?.dataCount = self?.employeeListData.count ?? 0
-                    }else{
-                        self?.dataCount = 0
-                    }
-                }
+                self.saveInDB(apiResponse)
+                self.fetchAllEmployees()
+                self.dataCount = self.employeeListData.count 
                 completion(true)
                 SVProgressHUD.dismiss()
-            }).disposed(by: disposeBag)
+                
+            case .failure(_,_,let error):
+                print(error.localizedDescription)
+                SVProgressHUD.dismiss()
+                SVProgressHUD.showError(withStatus: error.localizedDescription)
+                completion(false)
+            }
+        }
     }
+
+
+//    func getEmployeeList (completion: @escaping (_ success: Bool) -> Void) {
+//        SVProgressHUD.show()
+//        URLRequest.load(resource: EmployeeResponse.all)
+//            .subscribe(onNext: { [weak self] result in
+//
+//                guard let apiResponse = result?.employeeList else {return}
+//                self?.saveInDB(apiResponse)
+//                self?.fetchAllEmployees()
+//                self?.dataCount = self?.employeeListData.count ?? 0
+//
+//                SVProgressHUD.dismiss()
+//            }).disposed(by: disposeBag)
+//    }
     
     
     // MARK:- Values to display in our table view controller
@@ -131,7 +156,7 @@ class DashboardVM{
         
     }
     
-    func fetchAllEmployees(completion: @escaping (_ success: Bool) -> Void){
+    func fetchAllEmployees(){
         CoreDataManager.sharedManager.fetchAllEmployees(completion: { [weak self] (employees) in
             self?.employeeListData.removeAll()
             let filtredArr = employees.sorted(by: {
@@ -140,13 +165,8 @@ class DashboardVM{
                 
                 return firstName.lowercased() < scndName.lowercased()
             })
-
+            self?.employeeObservedData.onNext(filtredArr)
             self?.employeeListData = filtredArr
-            if employees.count > 0 {
-                completion(true)
-            }else{
-                completion(false)
-            }
         })
     }
     
@@ -163,12 +183,8 @@ class DashboardVM{
     func saveSingleDataInDB(id:String, name:String, salary:String, age:String){
         CoreDataManager.sharedManager.insertEmployee(id: id, name: name, salary: salary, age: age, rating: "0", image: "")
         
-        self.fetchAllEmployees { (success) in
-            if success {
-                self.dataCount = self.employeeListData.count
-            }else{
-                self.dataCount = 0
-            }
-        }
+        fetchAllEmployees()
+        self.dataCount = self.employeeListData.count
+
     }
 }

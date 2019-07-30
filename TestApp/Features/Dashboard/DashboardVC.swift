@@ -37,23 +37,24 @@ class DashboardVC: UIViewController {
     }
     
     private func getData(){
-
-        viewModel.fetchAllEmployees { (success) in
-            if !success {
-                self.viewModel.getEmployeeList { [weak self] (success) in
-                    if success {
-                        self?.apiCallDone = true
-                        DispatchQueue.main.async {
-                            self?.tableView.reloadData()
-                        }
+        
+        
+        viewModel.fetchAllEmployees()
+        if viewModel.numberOfItemsToDisplay > 0 {
+            viewModel.getData.subscribe(onNext: { [weak self] arr in
+                self?.tableView.reloadData()
+            }).disposed(by: disposeBag)
+        }else{
+            self.viewModel.getEmployeeList { [weak self] (success) in
+                if success {
+                    self?.apiCallDone = true
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
                     }
-                }
-            }else{
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
                 }
             }
         }
+
     }
 }
 

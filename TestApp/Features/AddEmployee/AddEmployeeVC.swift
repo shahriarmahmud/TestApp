@@ -8,6 +8,7 @@
 
 import UIKit
 import CoreData
+import RxSwift
 
 class AddEmployeeVC: UIViewController {
     
@@ -15,6 +16,7 @@ class AddEmployeeVC: UIViewController {
     private var viewModel = DashboardVM()
     private var apiCallDone = false
     private var counter = 1
+    let disposeBag = DisposeBag()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -23,19 +25,18 @@ class AddEmployeeVC: UIViewController {
     }
     
     private func getData(){
-        viewModel.fetchAllEmployees { (success) in
-            if !success {
-                self.viewModel.getEmployeeList { [weak self] (success) in
-                    if success {
-                        self?.apiCallDone = true
-                        DispatchQueue.main.async {
-                            self?.tableView.reloadData()
-                        }
+        viewModel.fetchAllEmployees()
+        if viewModel.numberOfItemsToDisplay > 0 {
+            viewModel.getData.subscribe(onNext: { [weak self] arr in
+                self?.tableView.reloadData()
+            }).disposed(by: disposeBag)
+        }else{
+            self.viewModel.getEmployeeList { [weak self] (success) in
+                if success {
+                    self?.apiCallDone = true
+                    DispatchQueue.main.async {
+                        self?.tableView.reloadData()
                     }
-                }
-            }else{
-                DispatchQueue.main.async {
-                    self.tableView.reloadData()
                 }
             }
         }
