@@ -17,11 +17,51 @@ class SearchEmployeeVC: UIViewController {
     private var searchActive : Bool = false
     private var viewModel = DashboardVM()
     private var apiCallDone = false
-    private var searchResultList: [NSManagedObject] = []
+    
+    let refreshControl = UIRefreshControl()
+    private let pullInitialStr = "Pull To Refresh"
+    private let pullFetchStr = "Fetching Data"
     
     override func viewDidLoad() {
         super.viewDidLoad()
         getData()
+        addRefreshControllToTableView()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        refreshControl.setValue(70, forKey: "_snappingHeight")
+    }
+    
+    private func addRefreshControllToTableView() {
+        refreshControl.attributedTitle = NSAttributedString(string: pullInitialStr)
+        if #available(iOS 10.0, *) {
+            tableView.refreshControl = refreshControl
+        } else {
+            tableView.addSubview(refreshControl)
+        }
+        refreshControl.addTarget(self, action: #selector(refresh), for: .valueChanged)
+    }
+    
+    @objc func refresh(sender:UIRefreshControl) {
+        viewModel.fetchAllEmployees { (success) in
+            if !success {
+                self.viewModel.getEmployeeList { [weak self] (success) in
+                    if success {
+                        self?.apiCallDone = true
+                        DispatchQueue.main.async {
+                            sender.endRefreshing()
+                            self?.tableView.reloadData()
+                        }
+                    }
+                }
+            }else{
+                DispatchQueue.main.async {
+                    sender.endRefreshing()
+                    self.tableView.reloadData()
+                }
+            }
+        }
     }
     
     private func getData(){
@@ -44,21 +84,10 @@ class SearchEmployeeVC: UIViewController {
     }
 
     @IBAction func filterAction(_ sender: Any) {
-        filterDataByRating()
-    }
-    
-    private func filterDataByRating(){
-        let filtredArr = viewModel.employeeListData.sorted(by: {
-            guard let first = $0.value(forKey: Constants.employeeRating) as? String else {return false}
-            guard let scnd = $1.value(forKey: Constants.employeeRating) as? String else {return false}
-            guard let firstDouble = Double(first) else {return false}
-            guard let scndDouble = Double(scnd) else {return false}
-            
-            return firstDouble > scndDouble
-        })
-        viewModel.employeeListData = filtredArr
+        viewModel.filterDataByRating()
         tableView.reloadData()
     }
+
     
 }
 
@@ -74,7 +103,7 @@ extension SearchEmployeeVC: UITableViewDelegate, UITableViewDataSource {
         }
         
         if(searchActive) {
-            return searchResultList.count
+            return viewModel.employeeListData.count
         }else{
              return viewModel.numberOfItemsToDisplay
         }
@@ -83,11 +112,7 @@ extension SearchEmployeeVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: DashboardCell.identifire, for: indexPath) as! DashboardCell
 
-        if(searchActive){
-            cell.setup(with: viewModel, searchemployeeListData: searchResultList, index: indexPath.row, isSearch: true)
-        }else {
-            cell.setup(with: viewModel, searchemployeeListData: searchResultList, index: indexPath.row, isSearch: false)
-        }
+        cell.setup(with: viewModel, index: indexPath.row)
         return cell
     }
     
@@ -115,13 +140,9 @@ extension SearchEmployeeVC: UISearchBarDelegate{
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-
-        searchResultList = viewModel.employeeListData.filter({ (employee) -> Bool in
-            guard let name = employee.value(forKey: Constants.employeeName) as? String else {return false}
-            return name.lowercased().contains(searchText.lowercased())
-        })
+        viewModel.searchResult(searchText: searchText)
         
-        if(searchResultList.count == 0){
+        if(viewModel.employeeListData.count == 0){
             searchActive = false;
         } else {
             searchActive = true;

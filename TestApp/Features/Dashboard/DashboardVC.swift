@@ -70,7 +70,7 @@ extension DashboardVC: UITableViewDelegate,UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: DashboardCell.identifire, for: indexPath) as! DashboardCell
-        cell.setup(with: viewModel, searchemployeeListData: viewModel.employeeListData, index: indexPath.section, isSearch: false)
+        cell.setup(with: viewModel, index: indexPath.section)
         return cell
     }
     

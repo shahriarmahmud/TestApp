@@ -16,6 +16,7 @@ class DashboardVM{
     
     var dataCount = 0
     var employeeListData: [NSManagedObject] = []
+//    var searchResultList: [NSManagedObject] = []
     
     
     func getEmployeeList (completion: @escaping (_ success: Bool) -> Void) {
@@ -53,86 +54,65 @@ class DashboardVM{
         return employeeListData.count
     }
     
-    func getEmployeeName(_ index:Int, _ isSearch:Bool, _ searchemployeeListData: [NSManagedObject])->String{
-        if isSearch {
-            if searchemployeeListData.count > 0 {
-                guard let name = searchemployeeListData[index].value(forKeyPath: Constants.employeeName) as? String else {return ""}
-                return name
-            }
-            return ""
-        }else{
-            if employeeListData.count > 0 {
-                guard let name = employeeListData[index].value(forKeyPath: Constants.employeeName) as? String else {return ""}
-                return name
-            }
-            return ""
+    func getEmployeeName(_ index:Int)->String{
+        if employeeListData.count > 0 {
+            guard let name = employeeListData[index].value(forKeyPath: Constants.employeeName) as? String else {return ""}
+            return name
         }
+        return ""
     }
     
-    func getEmployeeAge(_ index:Int, _ isSearch:Bool, _ searchemployeeListData: [NSManagedObject])->String{
-        if isSearch {
-            if searchemployeeListData.count > 0 {
-                guard let age = searchemployeeListData[index].value(forKeyPath: Constants.employeeAge) as? String else {return ""}
-                return age
-            }
-            return ""
-        }else{
-            if employeeListData.count > 0 {
-                guard let age = employeeListData[index].value(forKeyPath: Constants.employeeAge) as? String else {return ""}
-                return age
-            }
-            return ""
+    func getEmployeeAge(_ index:Int)->String{
+        if employeeListData.count > 0 {
+            guard let age = employeeListData[index].value(forKeyPath: Constants.employeeAge) as? String else {return ""}
+            return age
         }
+        return ""
     }
     
-    func getEmployeeId(_ index:Int, _ isSearch:Bool, _ searchemployeeListData: [NSManagedObject])->String{
-        if isSearch {
-            if searchemployeeListData.count > 0 {
-                guard let id = searchemployeeListData[index].value(forKeyPath: Constants.employeeId) as? String else {return ""}
-                return id
-            }
-            return ""
-        }else{
-            if employeeListData.count > 0 {
-                guard let id = employeeListData[index].value(forKeyPath: Constants.employeeId) as? String else {return ""}
-                return id
-            }
-            return ""
+    func getEmployeeId(_ index:Int)->String{
+        if employeeListData.count > 0 {
+            guard let id = employeeListData[index].value(forKeyPath: Constants.employeeId) as? String else {return ""}
+            return id
         }
+        return ""
     }
     
-    func getEmployeeImage(_ index:Int, _ isSearch:Bool, _ searchemployeeListData: [NSManagedObject])->String{
-        if isSearch {
-            if searchemployeeListData.count > 0 {
-                guard let image = searchemployeeListData[index].value(forKeyPath: Constants.employeeImage) as? String else {return ""}
-                return image
-            }
-            return ""
-        }else{
-            if employeeListData.count > 0 {
-                guard let image = employeeListData[index].value(forKeyPath: Constants.employeeImage) as? String else {return ""}
-                return image
-            }
-            return ""
+    func getEmployeeImage(_ index:Int)->String{
+        if employeeListData.count > 0 {
+            guard let image = employeeListData[index].value(forKeyPath: Constants.employeeImage) as? String else {return ""}
+            return image
         }
+        return ""
         
     }
     
-    func getEmployeeSalary(_ index:Int, _ isSearch:Bool, _ searchemployeeListData: [NSManagedObject])->String{
-        if isSearch {
-            if searchemployeeListData.count > 0 {
-                guard let salary = searchemployeeListData[index].value(forKeyPath: Constants.employeeSalary) as? String else {return ""}
-                return salary
-            }
-            return ""
-        }else{
-            if employeeListData.count > 0 {
-                guard let salary = employeeListData[index].value(forKeyPath: Constants.employeeSalary) as? String else {return ""}
-                return salary
-            }
-            return ""
+    func getEmployeeSalary(_ index:Int)->String{
+        if employeeListData.count > 0 {
+            guard let salary = employeeListData[index].value(forKeyPath: Constants.employeeSalary) as? String else {return ""}
+            return salary
         }
+        return ""
         
+    }
+    
+    func searchResult(searchText:String){
+        employeeListData = employeeListData.filter({ (employee) -> Bool in
+            guard let name = employee.value(forKey: Constants.employeeName) as? String else {return false}
+            return name.lowercased().contains(searchText.lowercased())
+        })
+    }
+    
+    func filterDataByRating(){
+        let filtredArr = employeeListData.sorted(by: {
+            guard let first = $0.value(forKey: Constants.employeeRating) as? String else {return false}
+            guard let scnd = $1.value(forKey: Constants.employeeRating) as? String else {return false}
+            guard let firstDouble = Double(first) else {return false}
+            guard let scndDouble = Double(scnd) else {return false}
+            
+            return firstDouble > scndDouble
+        })
+        employeeListData = filtredArr
     }
     
     func fetchAllEmployees(completion: @escaping (_ success: Bool) -> Void){

@@ -35,12 +35,12 @@ class DashboardCell: UITableViewCell {
         employeeNameLbl.textColor = UIColor.orange
     }
     
-    func setup(with viewModel: DashboardVM, searchemployeeListData: [NSManagedObject], index: Int, isSearch:Bool) {
-        employeeNameLbl.text = "Name : \(viewModel.getEmployeeName(index, isSearch, searchemployeeListData))"
-        employeeSalaryLbl.text = "Salary : \(viewModel.getEmployeeSalary(index, isSearch, searchemployeeListData))"
-        employeeAgeLbl.text = "Age : \(viewModel.getEmployeeAge(index, isSearch, searchemployeeListData))"
-        profileImage.sd_setImage(with: URL(string: viewModel.getEmployeeImage(index, isSearch, searchemployeeListData)), placeholderImage: UIImage(named: "placeholder"))
-        employeeId.text = "Id : \(viewModel.getEmployeeId(index, isSearch, searchemployeeListData))"
+    func setup(with viewModel: DashboardVM, index: Int) {
+        employeeNameLbl.text = "Name : \(viewModel.getEmployeeName(index))"
+        employeeSalaryLbl.text = "Salary : \(viewModel.getEmployeeSalary(index))"
+        employeeAgeLbl.text = "Age : \(viewModel.getEmployeeAge(index))"
+        profileImage.sd_setImage(with: URL(string: viewModel.getEmployeeImage(index)), placeholderImage: UIImage(named: "placeholder"))
+        employeeId.text = "Id : \(viewModel.getEmployeeId(index))"
     }
 
 }
